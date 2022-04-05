@@ -26,6 +26,7 @@ int delete_at(void **arr, int *len, int index)
 int main() {
 	// the vector of bytes u have to work with
 	// good luck :)
+	// start
 	void *arr = NULL;
 	int len = 0;
 
