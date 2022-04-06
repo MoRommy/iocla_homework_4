@@ -5,6 +5,11 @@
 int main() {
 	
 	void *arr = malloc(100);
+	printf("sizeof arr: %d\n", sizeof(*arr));
+	arr = realloc(arr, sizeof(arr) + 5);
+	printf("sizeof arr: %d\n", sizeof(*arr));
+
+
 	char *s = (char *)malloc(50);
 	scanf("%s", s);
 	//printf("%s size: %d length: %ld\n", s, sizeof(s), strlen(s));
@@ -58,4 +63,12 @@ int main() {
 
 1234535 ->   00000000 00010010 11010110 01100111
 
+
+8 	  -> 00001000
+54    -> 00011100
+
+5     -> 00000101
+
+insert 3 Andrei 100283912 12312312 Teo
+insert Andrei2 100 100 Teo2
 */

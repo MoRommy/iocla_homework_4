@@ -8,8 +8,21 @@
 #define header_size 5
 
 int add_last(void **arr, int *len, data_structure *data)
-{
-
+{	
+	printf("addl_last called\n");
+	unsigned int i = sizeof(*arr);
+	printf("sizeof arr: %u\n", i);
+	unsigned int element_len = data->header->len;
+	printf("element_len: %u\n", element_len);
+	*arr = realloc(*arr, i + element_len);
+	unsigned char c = data->header->type;
+	memcpy(*arr + i, &c, sizeof(char));
+	i += sizeof(char);
+	memcpy(*arr + i, &element_len, sizeof(int));
+	i += sizeof(int);
+	memcpy(*arr + i, data->data, element_len - header_size);
+	*len = *len + 1;
+	printf("done add_last\n");
 	return 0;
 }
 
@@ -44,10 +57,20 @@ int get_dim2(int type) {
 	return 4;
 }
 
+void printArr(void *arr, int len) {
+	printf("Arr addr: %p\n", arr);
+	for (int k = 0; k < len; k++) {
+			char c;
+			memcpy(&c, arr + k, 1);
+			printf("%d ", c);
+		}
+	printf("\n");
+}
+
 data_structure *get_data() {
 	int type, b1, b2;
-	char *nume_s = (char *) calloc(name_length, 1);
-	char *nume_d = (char *) calloc(name_length, 1);
+	char *nume_s = (char *) malloc(name_length);
+	char *nume_d = (char *) malloc(name_length);
 	scanf("%d", &type);
 	scanf("%s", nume_s);
 	scanf("%d", &b1);
@@ -75,21 +98,17 @@ data_structure *get_data() {
 
 	free(nume_s);
 	free(nume_d);
-
-	// for (int k = 0; k < i; k++) {
-	// 	int c;
-	// 	memcpy(&c, arr + k, 1);
-	// 	printf("%u ", c);
-	// }
 	return data;
 }
 
 void insert(void **arr, int *len) {
-
 	data_structure *data = get_data();
 	add_last(arr, len, data);
-
-	// add_last(arr, len, &data)
+	free(data->header);
+	free(data->data);
+	free(data);
+	printf("arr len:%d\n", *len);
+	printArr(*arr, 60);
 }
 
 void insert_at() {
@@ -128,7 +147,9 @@ int main() {
 	// the vector of bytes u have to work with
 	// good luck :)
 	// start
-	void *arr = NULL;
+	void *arr = malloc(0);
+	printf("main %lu\n", sizeof(*arr));
+	printf("init arr addr: %p\n", arr);
 	int len = 0;
 
 	char *command = (char *) malloc(command_length * sizeof(char));
