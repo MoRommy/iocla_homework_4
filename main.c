@@ -231,6 +231,6 @@ int main() {
 
 
 	free(command);
-
+	free(arr);
 	return 0;
 }
