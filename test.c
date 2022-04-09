@@ -70,5 +70,11 @@ int main() {
 5     -> 00000101
 
 insert 3 Andrei 100283912 12312312 Teo
-insert Andrei2 100 100 Teo2
+insert 1 Andrei2 100 100 Teo2
+insert 2 Andrei2 65000 12312312 Teo2
+
+
+arr 0 
+    0 1 2 3 4 5 6
+
 */
