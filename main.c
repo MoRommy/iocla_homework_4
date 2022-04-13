@@ -18,38 +18,31 @@ void printArr(void *arr, int len) {
 	printf("\n");
 }
 
-unsigned int get_starting_position(void *arr) {
-	unsigned int i = 0, len;
+unsigned int get_position_by_index(void *arr, int index) {
+	if (index == 0)
+		return 0;
+	unsigned int i = 0, len, el_index = 0;
 	char c;
-	//printArr(arr, 40);
-	//printf("starting memcpy from %p\n", arr);
 	memcpy(&c, arr + i, 1);
-	//printf("end memcpy with c: %u\n", c);
 	while (c != 0) {
-		//printf("i am in while c: %u\n", c);
 		memcpy(&len, arr + i + 1, 4);
 		i += len;
 		memcpy(&c, arr + i, 1);
+		el_index++;
+		if (el_index == index)
+			return i;
 	}
-	//printf("end get_starting_position\n");
 	return i;
 }
 
 int add_last(void **arr, int *len, data_structure *data)
 {	
-	//printf("add_last called\n");
-	//printArr(*arr, 40);
-	unsigned int i = get_starting_position(*arr);
-	//printf("starting pos: %u\n", i);
-
+	unsigned int i = get_position_by_index(*arr, -1);
 	unsigned int element_len = data->header->len;
-	//printf("element_len: %u\n", element_len);
 	*arr = realloc(*arr, i + element_len + 1);
 	void *p = *arr;
 	unsigned char zero = 0;
 	memcpy(p + i + element_len, &zero, 1);
-	//p[i + element_len] = 0;
-
 	unsigned char c = data->header->type;
 	memcpy(p + i, &c, sizeof(char));
 	i += sizeof(char);
@@ -57,14 +50,38 @@ int add_last(void **arr, int *len, data_structure *data)
 	i += sizeof(int);
 	memcpy(p + i, data->data, element_len - HEADER_SIZE);
 	*len = *len + 1;
-	//printArr(p, 60);
-	//printf("done add_last\n");
 	return 0;
 }
 
 int add_at(void **arr, int *len, data_structure *data, int index)
 {
+	unsigned int i = get_position_by_index(*arr, index);
+	unsigned int final_pos = get_position_by_index(*arr, -1);
+	//printf("index: %u %u\n", i, final_pos);
+	unsigned int data_length = data->header->len;
+	*arr = realloc(*arr, i + data_length + 1);
+	printf("data len: %u\n", data_length);
+	printf("initial data: \n");
+	printArr(*arr, 96);
+	printf("should shift %d positions\n", final_pos - i);
+	//memmove(*arr + i + data_length, *arr + i, final_pos - i);
+	char c;
+	for (int j = final_pos; j >= i; j--) {
+		memcpy(&c, *arr + j, 1);
+		memcpy(*arr + j + data_length, &c, 1);
+	}
 
+
+	c = 0;
+	memcpy(*arr + i, &c, 1);
+
+	printf("data after shift: \n");
+	printArr(*arr, 96);
+
+	//add_last(arr, len, data_structure);
+
+	//elem: 10010001
+	//arr: 10101011010101010 1010010101010 1010101010101
 	return 0;
 }
 
@@ -138,8 +155,14 @@ void insert(void **arr, int *len) {
 	//printArr(*arr, 60);
 }
 
-void insert_at() {
-	
+void insert_at(void **arr, int *len) {
+	int insert_pos;
+	scanf("%d", &insert_pos);
+	data_structure *data = get_data();
+	add_at(arr, len, data, insert_pos);
+	free(data->header);
+	free(data->data);
+	free(data);
 }
 
 void print_by_type(int b1, int b2, int type) {
@@ -201,7 +224,7 @@ int switch_comm(char *command, void **arr, int *len) {
 	if (!strcmp(command, "insert"))
 		insert(arr, len);
 	if (!strcmp(command, "insert_at"))
-		insert_at();
+		insert_at(arr, len);
 	if (!strcmp(command, "print"))
 		print(*arr);
 	if (!strcmp(command, "find"))
