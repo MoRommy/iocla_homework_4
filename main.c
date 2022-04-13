@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 #include "structs.h"
 
 #define COMMAND_LENGTH 15
@@ -141,16 +142,13 @@ void insert_at() {
 	
 }
 
-void print_by_type(unsigned int b1, unsigned int b2, int type) {
-	if (type == 1) {
-		char c1 = (char)b1, c2 = (char)b2;
-		printf("%u\n%u\n\n", c1, c2);
-	} else if (type == 2) {
-		unsigned short int c1 = (unsigned short int)b1;
-		printf("%u\n%u\n\n", c1, b2);
-	} else {
-		printf("%u\n%u\n\n", b1, b2);
-	}
+void print_by_type(int b1, int b2, int type) {
+	if (type == 1)
+		printf("%"PRId8"\n%"PRId8"\n\n", (int8_t)b1, (int8_t)b2);
+	else if (type == 2)
+		printf("%"PRId16"\n%"PRId32"\n\n", (int16_t)b1, b2);
+	else
+		printf("%"PRId32"\n%"PRId32"\n\n", b1, b2);
 }
 
 void print(void *arr) {
@@ -158,15 +156,16 @@ void print(void *arr) {
 	char c, c2;
 	memcpy(&c, arr + i, 1);
 	while (c != 0) { //cat timp am elemente in vector, le printez
-		unsigned int current_elem_dimension;
-		memcpy(&current_elem_dimension, arr + i + 1, 4);
 		char type;
 		memcpy(&type, arr + i, 1);
 		printf("Tipul %u\n", type);
+		unsigned int current_elem_dimension;
+		memcpy(&current_elem_dimension, arr + i + 1, 4);
 		int len = 5;
+		printf("%s", (char *)arr + i + len);
 		do {
 			memcpy(&c2, arr + i + len, 1);
-			printf("%c", c2);
+			//printf("%c", c2);
 			len++;
 		} while (c2 != 0);
 		printf(" pentru ");
@@ -175,12 +174,12 @@ void print(void *arr) {
 		len += get_dim1(type);
 		memcpy(&b2, arr + i + len, get_dim2(type));
 		len += get_dim2(type);
+		printf("%s\n", (char *)arr + i + len);
 		do {
 			memcpy(&c2, arr + i + len, 1);
-			printf("%c", c2);
+			//printf("%c", c2);
 			len++;
 		} while (c2 != 0);
-		printf("\n");
 		print_by_type(b1, b2, type);
 
 		i += current_elem_dimension;
