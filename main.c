@@ -39,7 +39,7 @@ int add_last(void **arr, int *len, data_structure *data)
 {	
 	unsigned int i = get_position_by_index(*arr, -1);
 	unsigned int element_len = data->header->len;
-	*arr = realloc(*arr, i + element_len + 1);
+	*arr = realloc(*arr, i + element_len + 2); //asta ar trb sa rezolve eroarea aia din valgrind invalid read from
 	void *p = *arr;
 	unsigned char zero = 0;
 	memcpy(p + i + element_len, &zero, 1);
@@ -57,31 +57,27 @@ int add_at(void **arr, int *len, data_structure *data, int index)
 {
 	unsigned int i = get_position_by_index(*arr, index);
 	unsigned int final_pos = get_position_by_index(*arr, -1);
-	//printf("index: %u %u\n", i, final_pos);
+	char type;
+	memcpy(&type, *arr + i, 1);
 	unsigned int data_length = data->header->len;
-	*arr = realloc(*arr, i + data_length + 1);
-	printf("data len: %u\n", data_length);
+	*arr = realloc(*arr, final_pos + data_length + 1);
+	//printf("new space: %u, final_pos: %d, i: %d, data len: %d\n", final_pos + data_length + 1, final_pos, i, data_length);
 	printf("initial data: \n");
 	printArr(*arr, 96);
-	printf("should shift %d positions\n", final_pos - i);
 	//memmove(*arr + i + data_length, *arr + i, final_pos - i);
 	char c;
-	for (int j = final_pos; j >= i; j--) {
+	for (int j = final_pos - 1; j >= i - 1; j--) {
 		memcpy(&c, *arr + j, 1);
 		memcpy(*arr + j + data_length, &c, 1);
 	}
 
-
 	c = 0;
 	memcpy(*arr + i, &c, 1);
 
-	printf("data after shift: \n");
+	add_last(arr, len, data);
+	memcpy(*arr + i + data_length, &type, 1);
+	printf("data after add_at:\n");
 	printArr(*arr, 96);
-
-	//add_last(arr, len, data_structure);
-
-	//elem: 10010001
-	//arr: 10101011010101010 1010010101010 1010101010101
 	return 0;
 }
 
