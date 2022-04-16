@@ -16,6 +16,7 @@ void printArr(void *arr, int len) {
 			printf("%d ", c);
 		}
 	printf("\n");
+	//for test development
 }
 
 unsigned int get_position_by_index(void *arr, int index) {
@@ -59,19 +60,9 @@ int add_at(void **arr, int *len, data_structure *data, int index)
 	unsigned int final_pos = get_position_by_index(*arr, -1);
 	unsigned int data_length = data->header->len;
 	*arr = realloc(*arr, final_pos + data_length + 1);
-	// printf("new space: %u, final_pos: %d, i: %d, data len: %d\n", final_pos + data_length + 1, final_pos, i, data_length);
-	// printf("initial data: ");
-	// printArr(*arr, 96);
 	memmove(*arr + i + data_length, *arr + i, final_pos - i);
 	int c = 0;
 	memcpy(*arr + i, &c, 1);
-
-	// printf("data after shift: ");
-	// printArr(*arr, 96);
-
-	//void *p = *arr;
-	// unsigned char zero = 0;
-	//memcpy(*arr + i + data_length, &zero, 1);
 	unsigned char c2 = data->header->type;
 	memcpy(*arr + i, &c2, sizeof(char));
 	i += sizeof(char);
@@ -79,17 +70,7 @@ int add_at(void **arr, int *len, data_structure *data, int index)
 	i += sizeof(int);
 	memcpy(*arr + i, data->data, data_length - HEADER_SIZE);
 	*len = *len + 1;
-
-	//add_last(arr, len, data);
-	//memcpy(*arr + i + data_length, &type, 1);
-	// printf("final data: ");
-	// printArr(*arr, 96);
 	return 0;
-}
-
-void find(void *data_block, int len, int index) 
-{
-
 }
 
 int delete_at(void **arr, int *len, int index)
@@ -98,14 +79,9 @@ int delete_at(void **arr, int *len, int index)
 	unsigned int final_pos = get_position_by_index(*arr, -1);
 	unsigned int data_length;
 	memcpy(&data_length, *arr + i + 1, 4);
-	// printf("i:%d final_pos: %d data_length:%d\n", i, final_pos, data_length);
-	// printf("initial data: ");
-	// printArr(*arr, 60);
 	memmove(*arr + i, *arr + i + data_length, final_pos - (i + data_length) + 1);
 	*arr = realloc(*arr, final_pos - data_length + 1);
 	*len = *len - 1;
-	// printf("final data: ");
-	// printArr(*arr, 60);
 	return 0;
 }
 
@@ -154,7 +130,6 @@ data_structure *get_data() {
 
 	free(nume_s);
 	free(nume_d);
-	//printf("done get_data!\n");
 	return data;
 }
 
@@ -164,8 +139,6 @@ void insert(void **arr, int *len) {
 	free(data->header);
 	free(data->data);
 	free(data);
-	//printf("arr len:%d\n", *len);
-	//printArr(*arr, 60);
 }
 
 void insert_at(void **arr, int *len) {
@@ -227,23 +200,27 @@ void print(void *arr) {
 	}
 }
 
-void find_caller(void *arr) {
-	int pos = 0;
-	scanf("%d", &pos);
+void find(void *data_block, int len, int pos) 
+{
 	int index = 0;
 	unsigned int i = 0;
 	char c;
-	memcpy(&c, arr + i, 1);
+	memcpy(&c, data_block + i, 1);
 	while (c != 0 && index < pos) { //cat timp am elemente in vector, le printez
 		unsigned int current_elem_dimension;
-		memcpy(&current_elem_dimension, arr + i + 1, 4);
+		memcpy(&current_elem_dimension, data_block + i + 1, 4);
 		i += current_elem_dimension;
-		memcpy(&c, arr + i, 1);
+		memcpy(&c, data_block + i, 1);
 		index++;
 	}
-	//printf("index: %d, pos: %d, i: %d", index, pos, i);
 	if (index == pos)
-		print_el(arr + i);
+		print_el(data_block + i);
+}
+
+void find_caller(void *arr) {
+	int pos = 0;
+	scanf("%d", &pos);
+	find(arr, 0, pos);
 }
 
 void delete(void **arr, int *len) {
@@ -269,23 +246,12 @@ int switch_comm(char *command, void **arr, int *len) {
 }
 
 int main() {
-	// the vector of bytes u have to work with
-	// good luck :)
-	// start
 	void *arr = calloc(1, 1);
-	//printf("init arr addr: %p\n", arr);
-	//printf("address arr: %p\n", &arr);
 	int len = 0;
-
 	char *command = (char *) malloc(COMMAND_LENGTH * sizeof(char));
 	do {
 		scanf("%s", command);
 	} while (switch_comm(command, &arr, &len));
-
-
-
-
-
 	free(command);
 	free(arr);
 	return 0;
