@@ -38,50 +38,52 @@ unsigned int get_position_by_index(void *arr, int index) {
 int add_last(void **arr, int *len, data_structure *data)
 {	
 	unsigned int i = get_position_by_index(*arr, -1);
-	unsigned int element_len = data->header->len;
-	*arr = realloc(*arr, i + element_len + 1);
-	void *p = *arr;
+	unsigned int data_length = data->header->len;
+	*arr = realloc(*arr, i + data_length + 1);
 	unsigned char zero = 0;
-	memcpy(p + i + element_len, &zero, 1);
+	memcpy(*arr + i + data_length, &zero, 1);
 	unsigned char c = data->header->type;
-	memcpy(p + i, &c, sizeof(char));
+	memcpy(*arr + i, &c, sizeof(char));
 	i += sizeof(char);
-	memcpy(p + i, &element_len, sizeof(int));
+	memcpy(*arr + i, &data_length, sizeof(int));
 	i += sizeof(int);
-	memcpy(p + i, data->data, element_len - HEADER_SIZE);
+	memcpy(*arr + i, data->data, data_length - HEADER_SIZE);
 	*len = *len + 1;
 	return 0;
 }
+
 
 int add_at(void **arr, int *len, data_structure *data, int index)
 {
 	unsigned int i = get_position_by_index(*arr, index);
 	unsigned int final_pos = get_position_by_index(*arr, -1);
-	//printf("index: %u %u\n", i, final_pos);
 	unsigned int data_length = data->header->len;
-	*arr = realloc(*arr, i + data_length + 1);
-	printf("data len: %u\n", data_length);
-	printf("initial data: \n");
-	printArr(*arr, 96);
-	printf("should shift %d positions\n", final_pos - i);
-	//memmove(*arr + i + data_length, *arr + i, final_pos - i);
-	char c;
-	for (int j = final_pos; j >= i; j--) {
-		memcpy(&c, *arr + j, 1);
-		memcpy(*arr + j + data_length, &c, 1);
-	}
-
-
-	c = 0;
+	*arr = realloc(*arr, final_pos + data_length + 1);
+	// printf("new space: %u, final_pos: %d, i: %d, data len: %d\n", final_pos + data_length + 1, final_pos, i, data_length);
+	// printf("initial data: ");
+	// printArr(*arr, 96);
+	memmove(*arr + i + data_length, *arr + i, final_pos - i);
+	int c = 0;
 	memcpy(*arr + i, &c, 1);
 
-	printf("data after shift: \n");
-	printArr(*arr, 96);
+	// printf("data after shift: ");
+	// printArr(*arr, 96);
 
-	//add_last(arr, len, data_structure);
+	//void *p = *arr;
+	// unsigned char zero = 0;
+	//memcpy(*arr + i + data_length, &zero, 1);
+	unsigned char c2 = data->header->type;
+	memcpy(*arr + i, &c2, sizeof(char));
+	i += sizeof(char);
+	memcpy(*arr + i, &data_length, sizeof(int));
+	i += sizeof(int);
+	memcpy(*arr + i, data->data, data_length - HEADER_SIZE);
+	*len = *len + 1;
 
-	//elem: 10010001
-	//arr: 10101011010101010 1010010101010 1010101010101
+	//add_last(arr, len, data);
+	//memcpy(*arr + i + data_length, &type, 1);
+	// printf("final data: ");
+	// printArr(*arr, 96);
 	return 0;
 }
 
@@ -92,7 +94,18 @@ void find(void *data_block, int len, int index)
 
 int delete_at(void **arr, int *len, int index)
 {
-
+	unsigned int i = get_position_by_index(*arr, index);
+	unsigned int final_pos = get_position_by_index(*arr, -1);
+	unsigned int data_length;
+	memcpy(&data_length, *arr + i + 1, 4);
+	// printf("i:%d final_pos: %d data_length:%d\n", i, final_pos, data_length);
+	// printf("initial data: ");
+	// printArr(*arr, 60);
+	memmove(*arr + i, *arr + i + data_length, final_pos - (i + data_length) + 1);
+	*arr = realloc(*arr, final_pos - data_length + 1);
+	*len = *len - 1;
+	// printf("final data: ");
+	// printArr(*arr, 60);
 	return 0;
 }
 
@@ -174,48 +187,69 @@ void print_by_type(int b1, int b2, int type) {
 		printf("%"PRId32"\n%"PRId32"\n\n", b1, b2);
 }
 
+void print_el (void *arr) {
+	char type;
+	memcpy(&type, arr, 1);
+	printf("Tipul %u\n", type);
+	unsigned int current_elem_dimension;
+	memcpy(&current_elem_dimension, arr + 1, 4);
+	int len = 5;
+	printf("%s", (char *)arr + len);
+	char c2;
+	do {
+		memcpy(&c2, arr + len, 1);
+		len++;
+	} while (c2 != 0);
+	printf(" pentru ");
+	unsigned int b1, b2;
+	memcpy(&b1, arr  + len, get_dim1(type));
+	len += get_dim1(type);
+	memcpy(&b2, arr + len, get_dim2(type));
+	len += get_dim2(type);
+	printf("%s\n", (char *)arr + len);
+	do {
+		memcpy(&c2, arr + len, 1);
+		len++;
+	} while (c2 != 0);
+	print_by_type(b1, b2, type);
+}
+
 void print(void *arr) {
 	unsigned int i = 0;
-	char c, c2;
+	char c;
 	memcpy(&c, arr + i, 1);
 	while (c != 0) { //cat timp am elemente in vector, le printez
-		char type;
-		memcpy(&type, arr + i, 1);
-		printf("Tipul %u\n", type);
 		unsigned int current_elem_dimension;
 		memcpy(&current_elem_dimension, arr + i + 1, 4);
-		int len = 5;
-		printf("%s", (char *)arr + i + len);
-		do {
-			memcpy(&c2, arr + i + len, 1);
-			//printf("%c", c2);
-			len++;
-		} while (c2 != 0);
-		printf(" pentru ");
-		unsigned int b1, b2;
-		memcpy(&b1, arr + i + len, get_dim1(type));
-		len += get_dim1(type);
-		memcpy(&b2, arr + i + len, get_dim2(type));
-		len += get_dim2(type);
-		printf("%s\n", (char *)arr + i + len);
-		do {
-			memcpy(&c2, arr + i + len, 1);
-			//printf("%c", c2);
-			len++;
-		} while (c2 != 0);
-		print_by_type(b1, b2, type);
-
+		print_el(arr + i);
 		i += current_elem_dimension;
 		memcpy(&c, arr + i, 1);
 	}
 }
 
-void find_caller() {
-	
+void find_caller(void *arr) {
+	int pos = 0;
+	scanf("%d", &pos);
+	int index = 0;
+	unsigned int i = 0;
+	char c;
+	memcpy(&c, arr + i, 1);
+	while (c != 0 && index < pos) { //cat timp am elemente in vector, le printez
+		unsigned int current_elem_dimension;
+		memcpy(&current_elem_dimension, arr + i + 1, 4);
+		i += current_elem_dimension;
+		memcpy(&c, arr + i, 1);
+		index++;
+	}
+	//printf("index: %d, pos: %d, i: %d", index, pos, i);
+	if (index == pos)
+		print_el(arr + i);
 }
 
-void delete() {
-	
+void delete(void **arr, int *len) {
+	int index;
+	scanf("%d", &index);
+	delete_at(arr, len, index);
 }
 
 int switch_comm(char *command, void **arr, int *len) {
@@ -228,9 +262,9 @@ int switch_comm(char *command, void **arr, int *len) {
 	if (!strcmp(command, "print"))
 		print(*arr);
 	if (!strcmp(command, "find"))
-		find_caller();
+		find_caller(*arr);
 	if (!strcmp(command, "delete_at"))
-		delete();
+		delete(arr, len);
 	return 1;
 }
 
@@ -238,7 +272,7 @@ int main() {
 	// the vector of bytes u have to work with
 	// good luck :)
 	// start
-	void *arr = calloc(1, 0);
+	void *arr = calloc(1, 1);
 	//printf("init arr addr: %p\n", arr);
 	//printf("address arr: %p\n", &arr);
 	int len = 0;
