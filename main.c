@@ -100,14 +100,12 @@ int delete_at(void **arr, int *len, int index)
 	memcpy(&data_length, *arr + i + 1, 4);
 	// printf("i:%d final_pos: %d data_length:%d\n", i, final_pos, data_length);
 	// printf("initial data: ");
-	// printArr(*arr, 40);
+	// printArr(*arr, 60);
 	memmove(*arr + i, *arr + i + data_length, final_pos - (i + data_length) + 1);
-	char zero = 0;
-	memcpy(*arr + i + data_length, &zero, 1);
 	*arr = realloc(*arr, final_pos - data_length + 1);
 	*len = *len - 1;
 	// printf("final data: ");
-	// printArr(*arr, 40);
+	// printArr(*arr, 60);
 	return 0;
 }
 
@@ -189,44 +187,63 @@ void print_by_type(int b1, int b2, int type) {
 		printf("%"PRId32"\n%"PRId32"\n\n", b1, b2);
 }
 
+void print_el (void *arr) {
+	char type;
+	memcpy(&type, arr, 1);
+	printf("Tipul %u\n", type);
+	unsigned int current_elem_dimension;
+	memcpy(&current_elem_dimension, arr + 1, 4);
+	int len = 5;
+	printf("%s", (char *)arr + len);
+	char c2;
+	do {
+		memcpy(&c2, arr + len, 1);
+		len++;
+	} while (c2 != 0);
+	printf(" pentru ");
+	unsigned int b1, b2;
+	memcpy(&b1, arr  + len, get_dim1(type));
+	len += get_dim1(type);
+	memcpy(&b2, arr + len, get_dim2(type));
+	len += get_dim2(type);
+	printf("%s\n", (char *)arr + len);
+	do {
+		memcpy(&c2, arr + len, 1);
+		len++;
+	} while (c2 != 0);
+	print_by_type(b1, b2, type);
+}
+
 void print(void *arr) {
 	unsigned int i = 0;
-	char c, c2;
+	char c;
 	memcpy(&c, arr + i, 1);
 	while (c != 0) { //cat timp am elemente in vector, le printez
-		char type;
-		memcpy(&type, arr + i, 1);
-		printf("Tipul %u\n", type);
 		unsigned int current_elem_dimension;
 		memcpy(&current_elem_dimension, arr + i + 1, 4);
-		int len = 5;
-		printf("%s", (char *)arr + i + len);
-		do {
-			memcpy(&c2, arr + i + len, 1);
-			//printf("%c", c2);
-			len++;
-		} while (c2 != 0);
-		printf(" pentru ");
-		unsigned int b1, b2;
-		memcpy(&b1, arr + i + len, get_dim1(type));
-		len += get_dim1(type);
-		memcpy(&b2, arr + i + len, get_dim2(type));
-		len += get_dim2(type);
-		printf("%s\n", (char *)arr + i + len);
-		do {
-			memcpy(&c2, arr + i + len, 1);
-			//printf("%c", c2);
-			len++;
-		} while (c2 != 0);
-		print_by_type(b1, b2, type);
-
+		print_el(arr + i);
 		i += current_elem_dimension;
 		memcpy(&c, arr + i, 1);
 	}
 }
 
-void find_caller() {
-	
+void find_caller(void *arr) {
+	int pos = 0;
+	scanf("%d", &pos);
+	int index = 0;
+	unsigned int i = 0;
+	char c;
+	memcpy(&c, arr + i, 1);
+	while (c != 0 && index < pos) { //cat timp am elemente in vector, le printez
+		unsigned int current_elem_dimension;
+		memcpy(&current_elem_dimension, arr + i + 1, 4);
+		i += current_elem_dimension;
+		memcpy(&c, arr + i, 1);
+		index++;
+	}
+	//printf("index: %d, pos: %d, i: %d", index, pos, i);
+	if (index == pos)
+		print_el(arr + i);
 }
 
 void delete(void **arr, int *len) {
@@ -245,7 +262,7 @@ int switch_comm(char *command, void **arr, int *len) {
 	if (!strcmp(command, "print"))
 		print(*arr);
 	if (!strcmp(command, "find"))
-		find_caller();
+		find_caller(*arr);
 	if (!strcmp(command, "delete_at"))
 		delete(arr, len);
 	return 1;
