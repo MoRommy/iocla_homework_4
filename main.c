@@ -38,46 +38,52 @@ unsigned int get_position_by_index(void *arr, int index) {
 int add_last(void **arr, int *len, data_structure *data)
 {	
 	unsigned int i = get_position_by_index(*arr, -1);
-	unsigned int element_len = data->header->len;
-	*arr = realloc(*arr, i + element_len + 2); //asta ar trb sa rezolve eroarea aia din valgrind invalid read from
-	void *p = *arr;
+	unsigned int data_length = data->header->len;
+	*arr = realloc(*arr, i + data_length + 1);
 	unsigned char zero = 0;
-	memcpy(p + i + element_len, &zero, 1);
+	memcpy(*arr + i + data_length, &zero, 1);
 	unsigned char c = data->header->type;
-	memcpy(p + i, &c, sizeof(char));
+	memcpy(*arr + i, &c, sizeof(char));
 	i += sizeof(char);
-	memcpy(p + i, &element_len, sizeof(int));
+	memcpy(*arr + i, &data_length, sizeof(int));
 	i += sizeof(int);
-	memcpy(p + i, data->data, element_len - HEADER_SIZE);
+	memcpy(*arr + i, data->data, data_length - HEADER_SIZE);
 	*len = *len + 1;
 	return 0;
 }
+
 
 int add_at(void **arr, int *len, data_structure *data, int index)
 {
 	unsigned int i = get_position_by_index(*arr, index);
 	unsigned int final_pos = get_position_by_index(*arr, -1);
-	char type;
-	memcpy(&type, *arr + i, 1);
 	unsigned int data_length = data->header->len;
 	*arr = realloc(*arr, final_pos + data_length + 1);
-	//printf("new space: %u, final_pos: %d, i: %d, data len: %d\n", final_pos + data_length + 1, final_pos, i, data_length);
-	printf("initial data: \n");
-	printArr(*arr, 96);
-	//memmove(*arr + i + data_length, *arr + i, final_pos - i);
-	char c;
-	for (int j = final_pos - 1; j >= i - 1; j--) {
-		memcpy(&c, *arr + j, 1);
-		memcpy(*arr + j + data_length, &c, 1);
-	}
-
-	c = 0;
+	// printf("new space: %u, final_pos: %d, i: %d, data len: %d\n", final_pos + data_length + 1, final_pos, i, data_length);
+	// printf("initial data: ");
+	// printArr(*arr, 96);
+	memmove(*arr + i + data_length, *arr + i, final_pos - i);
+	int c = 0;
 	memcpy(*arr + i, &c, 1);
 
-	add_last(arr, len, data);
-	memcpy(*arr + i + data_length, &type, 1);
-	printf("data after add_at:\n");
-	printArr(*arr, 96);
+	// printf("data after shift: ");
+	// printArr(*arr, 96);
+
+	//void *p = *arr;
+	// unsigned char zero = 0;
+	//memcpy(*arr + i + data_length, &zero, 1);
+	unsigned char c2 = data->header->type;
+	memcpy(*arr + i, &c2, sizeof(char));
+	i += sizeof(char);
+	memcpy(*arr + i, &data_length, sizeof(int));
+	i += sizeof(int);
+	memcpy(*arr + i, data->data, data_length - HEADER_SIZE);
+	*len = *len + 1;
+
+	//add_last(arr, len, data);
+	//memcpy(*arr + i + data_length, &type, 1);
+	// printf("final data: ");
+	// printArr(*arr, 96);
 	return 0;
 }
 
@@ -88,7 +94,20 @@ void find(void *data_block, int len, int index)
 
 int delete_at(void **arr, int *len, int index)
 {
-
+	unsigned int i = get_position_by_index(*arr, index);
+	unsigned int final_pos = get_position_by_index(*arr, -1);
+	unsigned int data_length;
+	memcpy(&data_length, *arr + i + 1, 4);
+	// printf("i:%d final_pos: %d data_length:%d\n", i, final_pos, data_length);
+	// printf("initial data: ");
+	// printArr(*arr, 40);
+	memmove(*arr + i, *arr + i + data_length, final_pos - (i + data_length) + 1);
+	char zero = 0;
+	memcpy(*arr + i + data_length, &zero, 1);
+	*arr = realloc(*arr, final_pos - data_length + 1);
+	*len = *len - 1;
+	// printf("final data: ");
+	// printArr(*arr, 40);
 	return 0;
 }
 
@@ -210,8 +229,10 @@ void find_caller() {
 	
 }
 
-void delete() {
-	
+void delete(void **arr, int *len) {
+	int index;
+	scanf("%d", &index);
+	delete_at(arr, len, index);
 }
 
 int switch_comm(char *command, void **arr, int *len) {
@@ -226,7 +247,7 @@ int switch_comm(char *command, void **arr, int *len) {
 	if (!strcmp(command, "find"))
 		find_caller();
 	if (!strcmp(command, "delete_at"))
-		delete();
+		delete(arr, len);
 	return 1;
 }
 
@@ -234,7 +255,7 @@ int main() {
 	// the vector of bytes u have to work with
 	// good luck :)
 	// start
-	void *arr = calloc(1, 0);
+	void *arr = calloc(1, 1);
 	//printf("init arr addr: %p\n", arr);
 	//printf("address arr: %p\n", &arr);
 	int len = 0;
